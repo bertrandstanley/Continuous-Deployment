@@ -1,19 +1,21 @@
 version: 2.1
-# Make sure to add MONGODB_URI to ENVIRONMENT VARIABLES in CircleCI so that the tests can connect to the database
 orbs:
   cypress: cypress-io/cypress@3.3.1
 
 jobs:
   start-server:
     docker:
-      - image: cypress/base:latest
+      - image: cypress/base:latest  # This image already has dependencies, but we'll ensure Xvfb is installed.
     environment:
-      MONGODB_URI: "mongodb+srv://bertrandstanley:<BsMgdb@0225>@cluster0.awshp.mongodb.net/stanleyDB?retryWrites=true&w=majority&appName=Cluster0" # This is just for demonstration; use CircleCI's environment variables instead for security!
+      MONGODB_URI: "mongodb+srv://bertrandstanley:<BsMgdb@0225>@cluster0.awshp.mongodb.net/stanleyDB?retryWrites=true&w=majority&appName=Cluster0"
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: npm install
+      - run:
+          name: Install Xvfb (for Cypress)
+          command: sudo apt-get update && sudo apt-get install -y xvfb
       - run:
           name: Build the app
           command: npm run build
@@ -27,8 +29,11 @@ jobs:
           name: Install dependencies
           command: npm install
       - run:
+          name: Install Xvfb (for Cypress)
+          command: sudo apt-get update && sudo apt-get install -y xvfb
+      - run:
           name: Run Cypress tests
-          command: npm run cypress:run
+          command: npx cypress run --browser electron --headless
 
 workflows:
   version: 2
